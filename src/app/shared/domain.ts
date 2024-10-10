@@ -32,6 +32,15 @@ export interface SortOption {
 
 export interface Category {
   id?: string;
+  createdAt: string;
+  lastModifiedAt: string;
+  color?: string;
+  name: string;
+}
+
+export interface CategoryUpsertDto {
+  id?: string;
+  color?: string;
   name: string;
 }
 
@@ -60,13 +69,13 @@ export interface Expense {
 export interface ExpenseUpsertDto {
   id?: string;
   amount: number;
-  categoryId: string;
+  categoryId?: string;
   date: string;
   name: string;
 }
 
 export interface ExpenseCriteria extends PagingCriteria {
-  categoryIds?: string;
+  categoryIds?: string[];
   name?: string;
   yearMonth?: string;
 }
