@@ -1,1 +1,24 @@
-Category List
+<ion-header>
+    <ion-toolbar>
+        <ion-title>Kategorien</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <!-- Kategorienliste -->
+    <ion-list>
+        <ion-item *ngFor="let category of categories">
+            <ion-label>
+                <h2>{{ category.name }}</h2>
+                <p>Budget: {{ category.budget | currency:'CHF' }}</p>
+            </ion-label>
+        </ion-item>
+    </ion-list>
+
+    <!-- Floating Action Button (FAB) -->
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button (click)="openModal()">
+            <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
+</ion-content>

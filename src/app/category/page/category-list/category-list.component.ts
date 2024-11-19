@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   IonButtons,
   IonCol,
@@ -27,6 +27,7 @@ import {
   ModalController
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
@@ -36,8 +37,8 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
   templateUrl: './category-list.component.html',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
-
     // Ionic
     IonHeader,
     IonToolbar,
@@ -66,10 +67,15 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
   ]
 })
 export default class CategoryListComponent {
-  // DI
-  private readonly modalCtrl = inject(ModalController);
+  // Statische Kategorienliste
+  categories = [
+    { name: 'Lebensmittel', budget: 200 },
+    { name: 'Transport', budget: 100 },
+    { name: 'Unterhaltung', budget: 150 },
+  ];
 
-  constructor() {
+  // Constructor Injection für ModalController
+  constructor(private readonly modalCtrl: ModalController) {
     // Add all used Ionic icons
     addIcons({ swapVertical, search, alertCircleOutline, add });
   }
