@@ -71,7 +71,7 @@ export default class CategoryListComponent {
   categories = [
     { name: 'Lebensmittel', budget: 200 },
     { name: 'Transport', budget: 100 },
-    { name: 'Unterhaltung', budget: 150 },
+    { name: 'Unterhaltung', budget: 150 }
   ];
 
   // Constructor Injection für ModalController

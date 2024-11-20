@@ -1,1 +1,60 @@
-Expense List
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Ausgabenübersicht</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Monatliche Navigation-->
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="addMonths(-1)">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ date | date: 'MMMM yyyy' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addMonths(1)">
+        <ion-icon slot="icon-only" name="arrow-forward"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filter Optionen -->
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Nach Name suchen"
+      (ionInput)="onFilterTextChange($event.detail.value)">
+    </ion-searchbar>
+    <ion-item>
+      <ion-label>Kategorie</ion-label>
+      <ion-select
+        (ionChange)="onFilterCategoryChange($event.detail.value)">
+        <ion-select-option value="">Alle</ion-select-option>
+        <ion-select-option *ngFor="let category of ['Lebensmittel', 'Transport', 'Freizeit']" [value]="category">
+          {{ category }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-toolbar>
+
+  <!-- Ausgabenliste -->
+  <ion-list>
+    <ion-item *ngFor="let expense of filteredExpenses">
+      <ion-label>
+        <h2>{{ expense.name }}</h2>
+        <p>Kategorie: {{ expense.kategorie }}</p>
+        <p>Datum: {{ expense.date | date: 'shortDate' }}</p>
+      </ion-label>
+      <ion-badge slot="end">{{ expense.amount | currency: 'CHF' }}</ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <!-- Keine Ausgaben -->
+  <div *ngIf="filteredExpenses.length === 0" style="text-align: center; margin-top: 20px;">
+    <ion-label>Keine Ausgaben für diesen Filter</ion-label>
+  </div>
+</ion-content>

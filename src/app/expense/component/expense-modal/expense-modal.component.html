@@ -1,1 +1,19 @@
 Expense Modal
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ausgabenübersicht</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let expense of expenses">
+      <ion-label>
+        <h2>{{ expense.name }}</h2>
+        <p>Kategorie: {{ expense.category }}</p>
+        <p>Datum: {{ expense.date }}</p>
+      </ion-label>
+      <ion-badge slot="end">{{ expense.amount | currency: 'CHF' }}</ion-badge>
+    </ion-item>
+  </ion-list>
+</ion-content>
