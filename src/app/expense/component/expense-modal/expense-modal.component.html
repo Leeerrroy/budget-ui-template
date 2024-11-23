@@ -72,16 +72,4 @@
     Date is required
   </ion-note>
 
-  <!-- Buttons -->
-  <div style="padding: 16px; text-align: center;">
-    <ion-button expand="block" color="primary" [disabled]="!expenseForm.valid" (click)="save()">
-      Save
-    </ion-button>
-    <ion-button expand="block" color="medium" (click)="cancel()">
-      Cancel
-    </ion-button>
-    <ion-button expand="block" color="danger" *ngIf="isEditing" (click)="delete()">
-      Delete
-    </ion-button>
-  </div>
 </ion-content>
