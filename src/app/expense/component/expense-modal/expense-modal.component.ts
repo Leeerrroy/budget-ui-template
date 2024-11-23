@@ -1,39 +1,34 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import {
-  IonButton,
-  IonButtons,
-  IonChip,
-  IonContent,
-  IonDatetime,
-  IonDatetimeButton,
-  IonFab,
-  IonFabButton,
+  ModalController,
   IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
   IonIcon,
-  IonInput,
+  IonTitle,
+  IonContent,
   IonItem,
+  IonInput,
   IonLabel,
-  IonModal,
-  IonNote,
   IonSelect,
   IonSelectOption,
-  IonTitle,
-  IonToolbar,
-  ModalController
+  IonNote,
+  IonDatetime
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl} from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { add, calendar, cash, close, pricetag, save, text, trash } from 'ionicons/icons';
-import CategoryModalComponent from '../../../category/component/category-modal/category-modal.component';
+import { add, calendar, cash, close, pricetag, save, trash } from 'ionicons/icons';
+import {NgForOf} from "@angular/common";
+
 
 @Component({
   selector: 'app-expense-modal',
   templateUrl: './expense-modal.component.html',
   standalone: true,
   imports: [
+    // Form und Ionic-Komponenten
     ReactiveFormsModule,
-
-    // Ionic
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -43,43 +38,67 @@ import CategoryModalComponent from '../../../category/component/category-modal/c
     IonContent,
     IonItem,
     IonInput,
-    IonChip,
     IonLabel,
     IonSelect,
     IonSelectOption,
     IonNote,
-    IonDatetimeButton,
-    IonModal,
     IonDatetime,
-    IonFab,
-    IonFabButton
+    NgForOf
   ]
 })
-export default class ExpenseModalComponent {
-  // DI
-  private readonly modalCtrl = inject(ModalController);
+export default class ExpenseModalComponent implements OnInit {
+  @Input() isEditing: boolean = false; // Gibt an, ob wir bearbeiten
+  @Input() expense: any = { name: '', category: '', amount: null, date: '' }; // Initialdaten
 
-  constructor() {
-    // Add all used Ionic icons
-    addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
+  expenseForm!: FormGroup; // Formulargruppe
+  categories: string[] = ['Lebensmittel', 'Transport', 'Freizeit']; // Kategorienliste
+  protected readonly FormControl = FormControl;
+
+  constructor(
+    private modalCtrl: ModalController,
+    private formBuilder: FormBuilder
+  ) {
+    addIcons({ add, calendar, cash, close, pricetag, save, trash });
   }
 
-  cancel(): void {
-    this.modalCtrl.dismiss(null, 'cancel');
+  ngOnInit(): void {
+    // Initialisiere das Formular
+    this.expenseForm = this.formBuilder.group({
+      name: [this.expense.name, [Validators.required]], // Name ist erforderlich
+      category: [this.expense.category, [Validators.required]], // Kategorie ist erforderlich
+      amount: [this.expense.amount, [Validators.required, Validators.min(0.01)]], // Betrag > 0
+      date: [this.expense.date, [Validators.required]] // Datum ist erforderlich
+    });
   }
 
   save(): void {
-    this.modalCtrl.dismiss(null, 'save');
+    if (this.expenseForm.valid) {
+      this.modalCtrl.dismiss(this.expenseForm.value, 'save'); // Gibt die eingegebenen Daten zurück
+    }
+  }
+
+  cancel(): void {
+    this.modalCtrl.dismiss(null, 'cancel'); // Schließt das Modal ohne Aktion
   }
 
   delete(): void {
-    this.modalCtrl.dismiss(null, 'delete');
+    this.modalCtrl.dismiss(null, 'delete'); // Löschen-Modus
   }
 
-  async showCategoryModal(): Promise<void> {
-    const categoryModal = await this.modalCtrl.create({ component: CategoryModalComponent });
-    categoryModal.present();
-    const { role } = await categoryModal.onWillDismiss();
-    console.log('role', role);
+  get nameControl(): FormControl {
+    return this.expenseForm.get('name') as FormControl;
   }
+
+  get categoryControl(): FormControl {
+    return this.expenseForm.get('category') as FormControl;
+  }
+
+  get amountControl(): FormControl {
+    return this.expenseForm.get('amount') as FormControl;
+  }
+
+  get dateControl(): FormControl {
+    return this.expenseForm.get('date') as FormControl;
+  }
+
 }

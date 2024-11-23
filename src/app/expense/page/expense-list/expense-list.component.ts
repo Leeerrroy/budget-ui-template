@@ -27,18 +27,22 @@ import {
   IonSkeletonText,
   IonTitle,
   IonToolbar,
-  ModalController, IonSearchbar
+  ModalController,
+  IonSearchbar
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
-import {CurrencyPipe, DatePipe, NgForOf, NgIf} from '@angular/common';
+import { CurrencyPipe, DatePipe, NgForOf, NgIf } from '@angular/common';
+import ExpenseModalComponent from '../../component/expense-modal/expense-modal.component';
+
 interface Expense {
   name: string;
   kategorie: string;
   amount: number;
   date: string;
 }
+
 @Component({
   selector: 'app-expense-list',
   templateUrl: './expense-list.component.html',
@@ -47,7 +51,6 @@ interface Expense {
     CurrencyPipe,
     DatePipe,
     ReactiveFormsModule,
-    // Ionic
     IonButton,
     IonBadge,
     IonHeader,
@@ -79,14 +82,12 @@ interface Expense {
     IonSearchbar
   ]
 })
-
 export default class ExpenseListComponent {
-  // Statische Expensenlist
-  expenses : Expense[] = [
+  expenses: Expense[] = [
     { name: 'Einkauf', kategorie: 'Lebensmittel', amount: 45.95, date: '2024-11-15' },
     { name: 'Tankstelle', kategorie: 'Transport', amount: 60.0, date: '2024-11-16' },
     { name: 'Kino', kategorie: 'Freizeit', amount: 15.5, date: '2024-11-18' },
-    { name: 'Kart fahren', kategorie: 'Freizeit', amount: 72.50, date: '2024-12-18' }
+    { name: 'Kart fahren', kategorie: 'Freizeit', amount: 72.5, date: '2024-12-18' }
   ];
   filteredExpenses: Expense[] = [];
 
@@ -95,21 +96,54 @@ export default class ExpenseListComponent {
   date = set(new Date(), { date: 1 });
 
   constructor() {
-    // Add all used Ionic icons
     addIcons({ swapVertical, pricetag, search, alertCircleOutline, add, arrowBack, arrowForward });
   }
 
-  addMonths(number: number): void {
-    this.date = addMonths(this.date, number); // Ändere das Datum
-    this.filterExpenses(); // Wende die Filterbedingungen (inkl. Monat) erneut an
+  // Modal für neue oder bearbeitete Expense öffnen
+  async openExpenseModal(expense?: Expense) {
+    const modal = await this.modalCtrl.create({
+      component: ExpenseModalComponent,
+      componentProps: {
+        isEditing: !!expense, // True, wenn wir bearbeiten
+        expense: expense ? { ...expense } : { name: '', kategorie: '', amount: 0, date: new Date().toISOString() }
+      }
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'save' && data) {
+      if (expense) {
+        // Bestehende Expense bearbeiten
+        const index = this.expenses.indexOf(expense);
+        if (index > -1) this.expenses[index] = data;
+      } else {
+        // Neue Expense hinzufügen
+        this.expenses.push(data);
+      }
+      this.filterExpenses(); // Filter aktualisieren
+    } else if (role === 'delete' && expense) {
+      // Expense löschen
+      const index = this.expenses.indexOf(expense);
+      if (index > -1) this.expenses.splice(index, 1);
+      this.filterExpenses();
+    }
   }
-  filterText = ''; // Filter für die Eingabe
-  filterCategory = ''; // Filter für die Kategorie
+
+  // Navigation für Monate
+  addMonths(number: number): void {
+    this.date = addMonths(this.date, number);
+    this.filterExpenses();
+  }
+
+  filterText = '';
+  filterCategory = '';
 
   ngOnInit() {
     this.filterExpenses();
   }
 
+  // Filterlogik
   filterExpenses() {
     const selectedMonth = this.date.getMonth();
     const selectedYear = this.date.getFullYear();
@@ -133,15 +167,17 @@ export default class ExpenseListComponent {
     });
   }
 
+  // Filtertext ändern
   onFilterTextChange(text: string | null | undefined) {
-    this.filterText = text ?? ''; // Falls `null` oder `undefined`, wird ein leerer String verwendet
+    this.filterText = text ?? '';
     this.filterExpenses();
   }
 
+  // Kategorie ändern
   onFilterCategoryChange(category: string) {
     this.filterCategory = category;
     this.filterExpenses();
   }
+
+  protected readonly ExpenseModalComponent = ExpenseModalComponent;
 }
-
-

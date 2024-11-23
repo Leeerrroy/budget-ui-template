@@ -1,19 +1,87 @@
-Expense Modal
 <ion-header>
   <ion-toolbar>
-    <ion-title>Ausgabenübersicht</ion-title>
+    <!-- Cancel-Button am Anfang -->
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <!-- Titel in der Mitte -->
+    <ion-title>
+      {{ isEditing ? 'Edit Expense' : 'Add Expense' }}
+    </ion-title>
+
+    <!-- Save-Button am Ende -->
+    <ion-buttons slot="end">
+      <ion-button [disabled]="!expenseForm.valid" (click)="save()">
+        <ion-icon slot="icon-only" name="save"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item *ngFor="let expense of expenses">
-      <ion-label>
-        <h2>{{ expense.name }}</h2>
-        <p>Kategorie: {{ expense.category }}</p>
-        <p>Datum: {{ expense.date }}</p>
-      </ion-label>
-      <ion-badge slot="end">{{ expense.amount | currency: 'CHF' }}</ion-badge>
-    </ion-item>
-  </ion-list>
+  <!-- Name -->
+  <ion-item>
+    <ion-label position="floating">Name</ion-label>
+    <br>
+    <ion-input [formControl]="nameControl" placeholder="Enter expense name"></ion-input>
+  </ion-item>
+  <ion-note *ngIf="nameControl.invalid && nameControl.touched" color="danger">
+    Name is required
+  </ion-note>
+
+  <!-- Kategorie -->
+  <ion-item>
+    <ion-label position="floating">Category</ion-label>
+    <br>
+    <ion-select
+      [formControl]="categoryControl"
+      placeholder="Select category">
+      <ion-select-option *ngFor="let category of categories" [value]="category">
+        {{ category }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-note *ngIf="categoryControl.invalid && categoryControl.touched" color="danger">
+    Category is required
+  </ion-note>
+
+  <!-- Betrag -->
+  <ion-item>
+    <ion-label position="floating">Amount (CHF)</ion-label>
+    <ion-input
+      type="number"
+      [formControl]="amountControl"
+      placeholder="Enter amount">
+    </ion-input>
+  </ion-item>
+  <ion-note *ngIf="amountControl.invalid && amountControl.touched" color="danger">
+    Amount must be greater than 0
+  </ion-note>
+
+  <!-- Datum -->
+  <ion-item>
+    <ion-label position="floating">Date</ion-label>
+    <ion-datetime
+      [formControl]="dateControl"
+      presentation="date"></ion-datetime>
+  </ion-item>
+  <ion-note *ngIf="dateControl.invalid && dateControl.touched" color="danger">
+    Date is required
+  </ion-note>
+
+  <!-- Buttons -->
+  <div style="padding: 16px; text-align: center;">
+    <ion-button expand="block" color="primary" [disabled]="!expenseForm.valid" (click)="save()">
+      Save
+    </ion-button>
+    <ion-button expand="block" color="medium" (click)="cancel()">
+      Cancel
+    </ion-button>
+    <ion-button expand="block" color="danger" *ngIf="isEditing" (click)="delete()">
+      Delete
+    </ion-button>
+  </div>
 </ion-content>

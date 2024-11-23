@@ -79,7 +79,6 @@ export default class CategoryListComponent {
     // Add all used Ionic icons
     addIcons({ swapVertical, search, alertCircleOutline, add });
   }
-
   async openModal(): Promise<void> {
     const modal = await this.modalCtrl.create({ component: CategoryModalComponent });
     modal.present();
