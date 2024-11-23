@@ -10,17 +10,36 @@ import { registerLocaleData } from '@angular/common';
 import { PageTitleStrategy } from './app/shared/service/page-title-strategy.service';
 import AppComponent from './app/app.component';
 
+// Firebase-Imports
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+import { authInterceptor } from './app/shared/interceptor/auth.interceptor';
+
 if (environment.production) enableProdMode();
 
 registerLocaleData(locale);
 
 bootstrapApplication(AppComponent, {
   providers: [
+    // Vorhandene Konfigurationen
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'CHF' },
     { provide: LOCALE_ID, useValue: 'de-CH' },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: TitleStrategy, useClass: PageTitleStrategy },
     provideIonicAngular(),
-    provideRouter(appRoutes, withPreloading(PreloadAllModules))
-  ]
+    provideRouter(appRoutes, withPreloading(PreloadAllModules)),
+
+    // Firebase-Konfiguration
+    { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
+
+    // AngularFire-Module
+    AngularFireAuthModule,
+    AngularFirestoreModule,
+
+    // HTTP-Client mit Interceptors
+    provideHttpClient(withInterceptors([authInterceptor]))
+  ],
 }).catch(err => console.error(err));

@@ -14,7 +14,7 @@
 
     <!-- Save-Button am Ende -->
     <ion-buttons slot="end">
-      <ion-button [disabled]="!expenseForm.valid" (click)="save()">
+      <ion-button [disabled]="!expenseForm.valid || isLoading" (click)="save()">
         <ion-icon slot="icon-only" name="save"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -22,6 +22,9 @@
 </ion-header>
 
 <ion-content>
+  <!-- Ladezustand -->
+  <ion-progress-bar *ngIf="isLoading" type="indeterminate"></ion-progress-bar>
+
   <!-- Name -->
   <ion-item>
     <ion-label position="floating">Name</ion-label>
@@ -39,15 +42,35 @@
     <ion-select
       [formControl]="categoryControl"
       placeholder="Select category">
-      <ion-select-option *ngFor="let category of categories" [value]="category">
-        {{ category }}
+
+      <!-- Kategorien dynamisch laden -->
+      <ion-select-option *ngFor="let category of categories" [value]="category.id">
+        {{ category.name }}
+      </ion-select-option>
+
+      <!-- Nur anzeigen, wenn keine Kategorien vorhanden sind -->
+      <ion-select-option *ngIf="categories.length === 0" disabled>
+        No categories available
+      </ion-select-option>
+
+      <!-- Option zum Erstellen einer neuen Kategorie -->
+      <ion-select-option (click)="openNewCategoryModal()">
+        + Add New Category
       </ion-select-option>
     </ion-select>
+
   </ion-item>
   <ion-note *ngIf="categoryControl.invalid && categoryControl.touched" color="danger">
     Category is required
   </ion-note>
 
+  <!-- Neue Kategorie erstellen
+ <ion-item>
+    <ion-label>New Category</ion-label>
+    <ion-input [(ngModel)]="newCategoryName" placeholder="Enter new category"></ion-input>
+    <ion-button fill="clear" (click)="addNewCategory()">Add</ion-button>
+ </ion-item>
+-->
   <!-- Betrag -->
   <ion-item>
     <ion-label position="floating">Amount (CHF)</ion-label>
@@ -71,5 +94,4 @@
   <ion-note *ngIf="dateControl.invalid && dateControl.touched" color="danger">
     Date is required
   </ion-note>
-
 </ion-content>

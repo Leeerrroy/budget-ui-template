@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { analytics, logOut, podium, pricetag } from 'ionicons/icons';
 import { categoriesPath } from './category/category.routes';
 import { expensesPath } from './expense/expense.routes';
-import { AsyncPipe } from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   IonApp,
@@ -25,6 +25,7 @@ import {
   IonSplitPane,
   IonToolbar
 } from '@ionic/angular/standalone';
+import { AuthService } from './shared/service/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -54,7 +55,8 @@ import {
     IonToolbar,
     IonButtons,
     IonButton,
-    IonRouterOutlet
+    IonRouterOutlet,
+    NgIf
   ]
 })
 export default class AppComponent {
@@ -62,6 +64,7 @@ export default class AppComponent {
     { title: 'Expenses', url: `/${expensesPath}`, icon: 'podium' },
     { title: 'Categories', url: `/${categoriesPath}`, icon: 'pricetag' }
   ];
+  readonly authService = inject(AuthService);
 
   constructor() {
     // Add all used Ionic icons

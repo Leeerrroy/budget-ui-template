@@ -1,21 +1,22 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonFab,
-  IonFabButton,
+  ModalController,
   IonHeader,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonTitle,
   IonToolbar,
-  ModalController
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonLabel,
+  IonNote
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl} from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { close, save, text, trash } from 'ionicons/icons';
+import { add, close } from 'ionicons/icons';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-category-modal',
@@ -23,8 +24,6 @@ import { close, save, text, trash } from 'ionicons/icons';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-
-    // Ionic
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -34,28 +33,38 @@ import { close, save, text, trash } from 'ionicons/icons';
     IonContent,
     IonItem,
     IonInput,
-    IonFab,
-    IonFabButton
-  ]
+    IonLabel,
+    NgIf,
+    IonNote
+  ],
 })
-export default class CategoryModalComponent {
-  // DI
-  private readonly modalCtrl = inject(ModalController);
+export default class CategoryModalComponent implements OnInit {
+  categoryForm!: FormGroup; // Formulargruppe
+  isLoading = false; // Ladezustand
 
-  constructor() {
-    // Add all used Ionic icons
-    addIcons({ close, save, text, trash });
+  constructor(
+    private modalCtrl: ModalController,
+    private formBuilder: FormBuilder
+  ) {
+    addIcons({ add, close });
+  }
+
+  ngOnInit(): void {
+    // Initialisiere das Formular
+    this.categoryForm = this.formBuilder.group({
+      name: ['', [Validators.required, Validators.minLength(2)]], // Kategoriename ist erforderlich
+    });
+  }
+  get nameControl(): FormControl {
+    return this.categoryForm.get('name') as FormControl;
+  }
+  save(): void {
+    if (this.categoryForm.valid) {
+      this.modalCtrl.dismiss(this.categoryForm.value, 'save');
+    }
   }
 
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
-  }
-
-  save(): void {
-    this.modalCtrl.dismiss(null, 'save');
-  }
-
-  delete(): void {
-    this.modalCtrl.dismiss(null, 'delete');
   }
 }

@@ -1,1 +1,33 @@
 Category Modal
+<ion-header>
+  <ion-toolbar>
+    <!-- Cancel-Button -->
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <!-- Titel -->
+    <ion-title>Neue Kategorie</ion-title>
+
+    <!-- Save-Button -->
+    <ion-buttons slot="end">
+      <ion-button [disabled]="!categoryForm.valid || isLoading" (click)="save()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Kategoriename -->
+  <ion-item>
+    <ion-label position="floating">Name</ion-label>
+    <ion-input [formControl]="nameControl" placeholder="Enter category name"></ion-input>
+
+  </ion-item>
+  <ion-note *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" color="danger">
+    Name is required (min. 2 characters)
+  </ion-note>
+</ion-content>
