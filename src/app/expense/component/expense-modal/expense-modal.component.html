@@ -39,6 +39,7 @@
   <ion-item>
     <ion-label position="floating">Category</ion-label>
     <br>
+    <br>
     <ion-select
       [formControl]="categoryControl"
       placeholder="Select category">
@@ -52,25 +53,19 @@
       <ion-select-option *ngIf="categories.length === 0" disabled>
         No categories available
       </ion-select-option>
-
-      <!-- Option zum Erstellen einer neuen Kategorie -->
-      <ion-select-option (click)="openNewCategoryModal()">
-        + Add New Category
-      </ion-select-option>
     </ion-select>
 
+    <!-- Button zum Erstellen einer neuen Kategorie -->
+    <ion-button fill="clear" slot="end" (click)="openNewCategoryModal()">
+      <ion-icon name="add"></ion-icon>
+      Add New Category
+    </ion-button>
   </ion-item>
   <ion-note *ngIf="categoryControl.invalid && categoryControl.touched" color="danger">
     Category is required
   </ion-note>
 
-  <!-- Neue Kategorie erstellen
- <ion-item>
-    <ion-label>New Category</ion-label>
-    <ion-input [(ngModel)]="newCategoryName" placeholder="Enter new category"></ion-input>
-    <ion-button fill="clear" (click)="addNewCategory()">Add</ion-button>
- </ion-item>
--->
+
   <!-- Betrag -->
   <ion-item>
     <ion-label position="floating">Amount (CHF)</ion-label>
@@ -95,3 +90,5 @@
     Date is required
   </ion-note>
 </ion-content>
+
+

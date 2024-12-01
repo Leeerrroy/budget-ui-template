@@ -96,10 +96,29 @@ export default class ExpenseModalComponent implements OnInit {
 
   async openNewCategoryModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
-      component: CategoryModalComponent // Das Kategorie-Modal
+      component: CategoryModalComponent
     });
-  }
 
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'save' && data) {
+      this.isLoading = true; // Ladezustand anzeigen
+      this.categoryService.upsertCategory(data).subscribe({
+        next: (response) => {
+          // Neue Kategorie lokal hinzufügen und auswählen
+          this.categories.push(data);
+          this.categoryControl.setValue(data.id);
+          this.isLoading = false; // Ladezustand beenden
+        },
+        error: (err) => {
+          console.error('Fehler beim Speichern der Kategorie:', err);
+          this.isLoading = false; // Ladezustand beenden
+        }
+      });
+    }
+  }
   // Getter für FormControls
   get nameControl(): FormControl {
     return this.expenseForm.get('name') as FormControl;
