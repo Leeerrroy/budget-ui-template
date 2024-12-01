@@ -9,10 +9,10 @@ import appRoutes from './app/shared/app.routes';
 import { registerLocaleData } from '@angular/common';
 import { PageTitleStrategy } from './app/shared/service/page-title-strategy.service';
 import AppComponent from './app/app.component';
+import { ExpenseService } from './app/services/expense.service';
 
 // Firebase-Imports
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
@@ -24,6 +24,7 @@ registerLocaleData(locale);
 
 bootstrapApplication(AppComponent, {
   providers: [
+    ExpenseService,
     // Vorhandene Konfigurationen
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'CHF' },
     { provide: LOCALE_ID, useValue: 'de-CH' },
