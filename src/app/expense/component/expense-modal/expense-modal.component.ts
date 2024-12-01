@@ -7,6 +7,8 @@ import {
   IonButtons,
   IonButton,
   IonIcon,
+  IonFab,
+  IonFabButton,
   IonTitle,
   IonContent,
   IonItem,
@@ -20,7 +22,7 @@ import {
 } from '@ionic/angular/standalone';
 import { FormGroup, Validators, FormControl, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { add, calendar, cash, close, pricetag, save, trash } from 'ionicons/icons';
+import { add, calendar, cash, close, pricetag, save, trash, text } from 'ionicons/icons';
 import { NgForOf, NgIf } from '@angular/common';
 import { ExpenseService } from '../../service/expense.service';
 import { CategoryService } from '../../../category/service/category.service';
@@ -34,6 +36,8 @@ import CategoryModalComponent from '../../../category/component/category-modal/c
   imports: [
     ReactiveFormsModule,
     IonHeader,
+    IonFabButton,
+    IonFab,
     IonToolbar,
     IonButtons,
     IonButton,
@@ -67,7 +71,7 @@ export default class ExpenseModalComponent implements OnInit {
     private expenseService: ExpenseService,
     private toastCtrl: ToastController
   ) {
-    addIcons({ add, calendar, cash, close, pricetag, save, trash });
+    addIcons({ add, calendar, cash, close, pricetag, save, trash, text });
   }
   ngOnInit(): void {
     this.expenseForm = this.formBuilder.group({

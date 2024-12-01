@@ -8,9 +8,7 @@
     </ion-buttons>
 
     <!-- Titel in der Mitte -->
-    <ion-title>
-      {{ isEditing ? 'Edit Expense' : 'Add Expense' }}
-    </ion-title>
+    <ion-title>{{ isEditing ? 'Edit Expense' : 'Add Expense' }}</ion-title>
 
     <!-- Save-Button am Ende -->
     <ion-buttons slot="end">
@@ -26,77 +24,69 @@
   <ion-progress-bar *ngIf="isLoading" type="indeterminate"></ion-progress-bar>
 
   <!-- Name -->
-  <ion-item>
-    <ion-label position="floating">Name</ion-label>
-    <br>
-    <ion-input [formControl]="nameControl" placeholder="Enter expense name"></ion-input>
+  <ion-item lines="none">
+    <ion-icon slot="start" name="text"></ion-icon>
+    <ion-input
+      [formControl]="nameControl"
+      placeholder="Expense Name"
+    ></ion-input>
   </ion-item>
   <ion-note *ngIf="nameControl.invalid && nameControl.touched" color="danger">
     Name is required
   </ion-note>
 
   <!-- Kategorie -->
-  <ion-item>
-    <ion-label position="floating">Category</ion-label>
-    <br>
+  <ion-item lines="none">
+    <ion-icon slot="start" name="pricetag"></ion-icon>
     <ion-select
       [formControl]="categoryControl"
-      placeholder="Select category">
-
+      placeholder="Select category"
+    >
       <!-- Kategorien dynamisch laden -->
       <ion-select-option *ngFor="let category of categories" [value]="category.id">
         {{ category.name }}
       </ion-select-option>
-
-      <!-- Nur anzeigen, wenn keine Kategorien vorhanden sind -->
-      <ion-select-option *ngIf="categories.length === 0" disabled>
-        No categories available
-      </ion-select-option>
     </ion-select>
 
-    <!-- Button zum Erstellen einer neuen Kategorie -->
+    <!-- Button für Neue Kategorie -->
     <ion-button fill="clear" slot="end" (click)="openNewCategoryModal()">
       <ion-icon name="add"></ion-icon>
-      Add New Category
     </ion-button>
   </ion-item>
   <ion-note *ngIf="categoryControl.invalid && categoryControl.touched" color="danger">
     Category is required
   </ion-note>
 
-
   <!-- Betrag -->
-  <ion-item>
-    <ion-label position="floating">Amount (CHF)</ion-label>
+  <ion-item lines="none">
+    <ion-icon slot="start" name="cash"></ion-icon>
     <ion-input
       type="number"
       [formControl]="amountControl"
-      placeholder="Enter amount">
-    </ion-input>
+      placeholder="Amount"
+    ></ion-input>
   </ion-item>
   <ion-note *ngIf="amountControl.invalid && amountControl.touched" color="danger">
     Amount must be greater than 0
   </ion-note>
 
+
   <!-- Datum -->
-  <ion-item>
-    <ion-label position="floating">Date</ion-label>
+  <ion-item lines="none">
+    <ion-icon slot="start" name="calendar"></ion-icon>
     <ion-datetime
       [formControl]="dateControl"
-      presentation="date"></ion-datetime>
+      presentation="date"
+    ></ion-datetime>
   </ion-item>
   <ion-note *ngIf="dateControl.invalid && dateControl.touched" color="danger">
     Date is required
   </ion-note>
 
-  <!-- Löschen-Button -->
-  <ion-item *ngIf="isEditing">
-    <ion-button color="danger" expand="block" (click)="delete()">
-      <ion-icon slot="start" name="trash"></ion-icon>
-      Delete Expense
-    </ion-button>
-  </ion-item>
+  <!-- Löschen Button -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="isEditing">
+    <ion-fab-button color="danger" (click)="delete()">
+      <ion-icon name="trash"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
-
-
-
