@@ -29,7 +29,8 @@ import {
   IonToolbar,
   ModalController,
   IonSearchbar,
-  ToastController
+  ToastController,
+  IonItemDivider
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ExpenseService } from '../../service/expense.service';
@@ -70,6 +71,7 @@ import { CategoryService } from '../../../category/service/category.service';
     IonSelectOption,
     IonInput,
     IonLabel,
+    IonItemDivider,
     IonSkeletonText,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
@@ -112,6 +114,26 @@ export default class ExpenseListComponent implements OnInit {
   }
 
   /**
+   * Erstellt die Gruppierten Ausgaben
+   */
+  public groupedExpenses: { [date: string]: Expense[] } = {};
+
+  private groupExpensesByDate(): void {
+    this.groupedExpenses = this.expenses.reduce((groups, expense) => {
+      const dateKey = new Date(expense.date).toLocaleDateString('de-CH', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }); // Datum formatieren
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(expense);
+      return groups;
+    }, {} as { [date: string]: Expense[] });
+  }
+
+  /**
    * Lädt die Ausgaben aus der Datenbank
    */
   private loadExpenses(): void {
@@ -135,7 +157,7 @@ export default class ExpenseListComponent implements OnInit {
             lastModifiedAt: expense.category?.lastModifiedAt || ''
           }
         }));
-        this.filteredExpenses = [...this.expenses];
+        this.groupExpensesByDate(); // Gruppieren nach Datum
         this.isLoading = false;
       },
       error: async () => {
@@ -143,8 +165,20 @@ export default class ExpenseListComponent implements OnInit {
         this.isLoading = false;
       },
     });
+   }
+  /**
+   * Gibt die Key Objekte zurück
+   */
+  getKeys(obj: { [key: string]: any }): string[] {
+    return Object.keys(obj);
   }
 
+  /**
+   * Gibt an ob im Monat überhaupt etwas gefunden wurde
+   */
+  isGroupedExpensesEmpty(): boolean {
+    return Object.keys(this.groupedExpenses).length === 0;
+  }
 
   /**
    * Monatsnavigation

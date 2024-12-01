@@ -36,10 +36,6 @@
       <ion-label>Kategorie</ion-label>
       <ion-select
         (ionChange)="onFilterCategoryChange($event.detail.value)">
-        <ion-select-option value="">Alle</ion-select-option>
-        <ion-select-option *ngFor="let category of ['Lebensmittel', 'Transport', 'Freizeit']" [value]="category">
-          {{ category }}
-        </ion-select-option>
       </ion-select>
       <ion-icon slot="end" name="pricetag"></ion-icon>
     </ion-item>
@@ -47,15 +43,23 @@
 
   <!-- Ausgabenliste -->
   <ion-list>
-    <ion-item *ngFor="let expense of filteredExpenses" detail="true" (click)="openExpenseModal(expense)">
-      <ion-label>
-        <h2>{{ expense.name }}</h2>
-        <p>Kategorie: {{ expense.category }}</p>
-        <p>Datum: {{ expense.date | date: 'shortDate' }}</p>
-      </ion-label>
-      <ion-badge slot="end">{{ expense.amount | currency: 'CHF' }}</ion-badge>
-      <ion-icon name="cash" slot="start"></ion-icon>
-    </ion-item>
+    <!-- Gruppierte Ausgabe -->
+    <div *ngFor="let date of getKeys(groupedExpenses)">
+      <ion-item-divider>
+        <ion-label>
+          {{ date }}
+        </ion-label>
+      </ion-item-divider>
+
+      <ion-item *ngFor="let expense of groupedExpenses[date]" detail="true" (click)="openExpenseModal(expense)">
+        <ion-label>
+          <h2>{{ expense.name }}</h2>
+          <p>Kategorie: {{ expense.category?.name || 'Uncategorized' }}</p>
+          <p>Datum: {{ expense.date | date: 'shortDate' }}</p>
+        </ion-label>
+        <ion-badge slot="end">{{ expense.amount | currency: 'CHF' }}</ion-badge>
+      </ion-item>
+    </div>
   </ion-list>
 
   <!-- Floating Action Button (FAB) -->
@@ -66,8 +70,7 @@
   </ion-fab>
 
   <!-- Keine Ausgaben -->
-  <div *ngIf="filteredExpenses.length === 0" style="text-align: center; margin-top: 20px;">
+  <div *ngIf="isGroupedExpensesEmpty()" style="text-align: center; margin-top: 20px;">
     <ion-icon name="alert-circle-outline"></ion-icon>
     <ion-label>Keine Ausgaben für diesen Filter</ion-label>
   </div>
-</ion-content>
