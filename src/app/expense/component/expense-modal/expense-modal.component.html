@@ -39,7 +39,6 @@
   <ion-item>
     <ion-label position="floating">Category</ion-label>
     <br>
-    <br>
     <ion-select
       [formControl]="categoryControl"
       placeholder="Select category">
@@ -89,6 +88,15 @@
   <ion-note *ngIf="dateControl.invalid && dateControl.touched" color="danger">
     Date is required
   </ion-note>
+
+  <!-- Löschen-Button -->
+  <ion-item *ngIf="isEditing">
+    <ion-button color="danger" expand="block" (click)="delete()">
+      <ion-icon slot="start" name="trash"></ion-icon>
+      Delete Expense
+    </ion-button>
+  </ion-item>
 </ion-content>
+
 
 

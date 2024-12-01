@@ -15,7 +15,8 @@ import {
   IonSelect,
   IonSelectOption,
   IonNote,
-  IonDatetime
+  IonDatetime,
+  ToastController
 } from '@ionic/angular/standalone';
 import { FormGroup, Validators, FormControl, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -63,17 +64,20 @@ export default class ExpenseModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private formBuilder: FormBuilder,
     private categoryService: CategoryService,
-    private expenseService: ExpenseService
-  ) {}
-
+    private expenseService: ExpenseService,
+    private toastCtrl: ToastController
+  ) {
+    addIcons({ add, calendar, cash, close, pricetag, save, trash });
+  }
   ngOnInit(): void {
     this.expenseForm = this.formBuilder.group({
+      id: [this.expense.id || null],
       name: [this.expense.name, [Validators.required]],
       category: [this.expense.category, []],
       amount: [this.expense.amount, [Validators.required, Validators.min(0.01)]],
       date: [this.expense.date, [Validators.required]]
     });
-
+    console.log('ExpenseService instance:', this.expenseService);
     this.loadCategories();
   }
 
@@ -94,6 +98,11 @@ export default class ExpenseModalComponent implements OnInit {
     this.modalCtrl.dismiss(null, 'cancel');
   }
 
+  async delete(): Promise<void> {
+    this.modalCtrl.dismiss(null, 'delete');
+  }
+
+  //Neue Kategorie hinzufügen im Modal
   async openNewCategoryModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: CategoryModalComponent
@@ -106,19 +115,20 @@ export default class ExpenseModalComponent implements OnInit {
     if (role === 'save' && data) {
       this.isLoading = true; // Ladezustand anzeigen
       this.categoryService.upsertCategory(data).subscribe({
-        next: (response) => {
+        next: response => {
           // Neue Kategorie lokal hinzufügen und auswählen
           this.categories.push(data);
           this.categoryControl.setValue(data.id);
           this.isLoading = false; // Ladezustand beenden
         },
-        error: (err) => {
+        error: err => {
           console.error('Fehler beim Speichern der Kategorie:', err);
           this.isLoading = false; // Ladezustand beenden
         }
       });
     }
   }
+
   // Getter für FormControls
   get nameControl(): FormControl {
     return this.expenseForm.get('name') as FormControl;

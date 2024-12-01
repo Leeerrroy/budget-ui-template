@@ -38,6 +38,8 @@ import { addIcons } from 'ionicons';
 import {add, alertCircleOutline, arrowBack, arrowForward, close, pricetag, search, swapVertical, save} from 'ionicons/icons';
 import { CurrencyPipe, DatePipe, NgForOf, NgIf } from '@angular/common';
 import ExpenseModalComponent from '../../component/expense-modal/expense-modal.component';
+import { CategoryService } from '../../../category/service/category.service';
+
 
 @Component({
   selector: 'app-expense-list',
@@ -90,7 +92,8 @@ export default class ExpenseListComponent implements OnInit {
   constructor(
     private expenseService: ExpenseService,
     private modalCtrl: ModalController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private categoryService: CategoryService
   ) {
   addIcons({ add, close, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical, save });
 }
@@ -123,8 +126,16 @@ export default class ExpenseListComponent implements OnInit {
     this.isLoading = true;
     this.expenseService.getExpenses(criteria).subscribe({
       next: (response) => {
-        this.expenses = response.content; // Aus Datenbank laden
-        this.filteredExpenses = [...this.expenses]; // Gefilterte Liste initialisieren
+        this.expenses = response.content.map(expense => ({
+          ...expense,
+          category: {
+            id: typeof expense.category === 'string' ? expense.category : expense.category?.id,
+            name: expense.category?.name || 'Uncategorized',
+            createdAt: expense.category?.createdAt || '',
+            lastModifiedAt: expense.category?.lastModifiedAt || ''
+          }
+        }));
+        this.filteredExpenses = [...this.expenses];
         this.isLoading = false;
       },
       error: async () => {
@@ -133,6 +144,7 @@ export default class ExpenseListComponent implements OnInit {
       },
     });
   }
+
 
   /**
    * Monatsnavigation
@@ -164,6 +176,12 @@ export default class ExpenseListComponent implements OnInit {
 
   private saveExpense(expense: ExpenseUpsertDto, existingExpense?: Expense): void {
     this.isLoading = true;
+
+    // Prüfen, ob es sich um eine Aktualisierung handelt
+    if (existingExpense?.id) {
+      expense.id = existingExpense.id;
+    }
+
     this.expenseService.upsertExpense(expense).subscribe({
       next: async () => {
         if (existingExpense) {
@@ -174,6 +192,7 @@ export default class ExpenseListComponent implements OnInit {
         }
         this.filteredExpenses = [...this.expenses]; // Liste aktualisieren
         await this.showToast('Expense erfolgreich gespeichert.', 'success');
+        this.loadExpenses(); // API erneut aufrufen
         this.isLoading = false;
       },
       error: async () => {
@@ -198,6 +217,7 @@ export default class ExpenseListComponent implements OnInit {
       },
     });
   }
+
 
   onFilterTextChange(searchText: string): void {
     this.filterText = searchText ?? '';
