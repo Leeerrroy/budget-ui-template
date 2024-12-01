@@ -6,12 +6,14 @@ import {
   IonButtons,
   IonButton,
   IonIcon,
+  IonProgressBar,
   IonTitle,
   IonContent,
   IonItem,
   IonInput,
   IonLabel,
-  IonNote
+  IonNote,
+  IonFooter
 } from '@ionic/angular/standalone';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl} from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -26,6 +28,8 @@ import { NgIf } from '@angular/common';
     ReactiveFormsModule,
     IonHeader,
     IonToolbar,
+    IonProgressBar,
+    IonFooter,
     IonButtons,
     IonButton,
     IonIcon,
