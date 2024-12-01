@@ -36,7 +36,7 @@ import { NgIf } from '@angular/common';
     IonLabel,
     NgIf,
     IonNote
-  ],
+  ]
 })
 export default class CategoryModalComponent implements OnInit {
   categoryForm!: FormGroup; // Formulargruppe

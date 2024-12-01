@@ -10,7 +10,6 @@
     <ion-item *ngFor="let category of categories">
       <ion-label>
         <h2>{{ category.name }}</h2>
-        <p>Budget: {{ category.budget | currency: 'CHF' }}</p>
       </ion-label>
     </ion-item>
   </ion-list>

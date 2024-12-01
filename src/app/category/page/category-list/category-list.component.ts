@@ -19,9 +19,11 @@ import {
 import {AngularFirestore} from '@angular/fire/compat/firestore';
 import {AngularFireAuth} from '@angular/fire/compat/auth';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
-import {CurrencyPipe, CommonModule, NgForOf} from '@angular/common';
-import {CategoryService} from '../../service/category.service';
-import {Category, CategoryUpsertDto} from '../../../shared/domain';
+import { CurrencyPipe, CommonModule, NgForOf} from '@angular/common';
+import { CategoryService } from '../../service/category.service';
+import { Category, CategoryUpsertDto} from '../../../shared/domain';
+import { addIcons } from "ionicons";
+import { add, close } from "ionicons/icons";
 
 @Component({
   selector: 'app-category-list',
@@ -54,6 +56,7 @@ export default class CategoryListComponent implements OnInit {
     private categoryService: CategoryService,
     private toastCtrl: ToastController
   ) {
+    addIcons({ add, close });
   }
 
   ngOnInit(): void {
@@ -62,9 +65,7 @@ export default class CategoryListComponent implements OnInit {
 
   private loadCategories(): void {
     this.isLoading = true;
-    this.categoryService
-      .getAllCategories({sort: 'name,asc'})
-      .subscribe({
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
       next: categories => {
         this.categories = categories;
         this.isLoading = false;
@@ -83,12 +84,12 @@ export default class CategoryListComponent implements OnInit {
 
   async openModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
-      component: CategoryModalComponent,
+      component: CategoryModalComponent
     });
 
     await modal.present();
 
-    const {data, role} = await modal.onWillDismiss();
+    const { data, role } = await modal.onWillDismiss();
     if (role === 'save' && data) {
       this.saveCategory(data);
     }
@@ -100,7 +101,7 @@ export default class CategoryListComponent implements OnInit {
         const toast = await this.toastCtrl.create({
           message: 'Kategorie erfolgreich gespeichert!',
           duration: 3000,
-          color: 'success',
+          color: 'success'
         });
         toast.present();
         this.loadCategories();
@@ -109,7 +110,7 @@ export default class CategoryListComponent implements OnInit {
         const toast = await this.toastCtrl.create({
           message: 'Fehler beim Speichern der Kategorie.',
           duration: 3000,
-          color: 'danger',
+          color: 'danger'
         });
         toast.present();
       },
@@ -123,7 +124,7 @@ export default class CategoryListComponent implements OnInit {
         const toast = await this.toastCtrl.create({
           message: 'Fehler beim Löschen der Kategorie.',
           duration: 3000,
-          color: 'danger',
+          color: 'danger'
         });
         toast.present();
       },
