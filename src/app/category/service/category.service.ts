@@ -15,21 +15,19 @@ export class CategoryService {
 
   getCategories = (pagingCriteria: CategoryCriteria): Observable<Page<Category>> =>
     this.httpClient.get<Page<Category>>(this.apiUrl, {
-      params: new HttpParams({ fromObject: { ...pagingCriteria } }),
+      params: new HttpParams({ fromObject: { ...pagingCriteria } })
     });
 
   getAllCategories = (sortCriteria: AllCategoryCriteria): Observable<Category[]> =>
     this.httpClient.get<Category[]>(this.apiV2Url, {
-      params: new HttpParams({ fromObject: { ...sortCriteria } }),
+      params: new HttpParams({ fromObject: { ...sortCriteria } })
     });
 
   // Create & Update
 
-  upsertCategory = (category: CategoryUpsertDto): Observable<void> =>
-    this.httpClient.put<void>(this.apiUrl, category);
+  upsertCategory = (category: CategoryUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, category);
 
   // Delete
 
-  deleteCategory = (id: string): Observable<void> =>
-    this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
+  deleteCategory = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
 }

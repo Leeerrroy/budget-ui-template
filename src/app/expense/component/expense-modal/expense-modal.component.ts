@@ -15,15 +15,15 @@ import {
   IonSelect,
   IonSelectOption,
   IonNote,
-  IonDatetime,
+  IonDatetime
 } from '@ionic/angular/standalone';
 import { FormGroup, Validators, FormControl, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, calendar, cash, close, pricetag, save, trash } from 'ionicons/icons';
 import { NgForOf, NgIf } from '@angular/common';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { formatISO, parseISO } from 'date-fns';
+import { ExpenseService } from '../../service/expense.service';
+import { CategoryService } from '../../../category/service/category.service';
+import { Category } from '../../../shared/domain';
 import CategoryModalComponent from '../../../category/component/category-modal/category-modal.component';
 
 @Component({
@@ -48,62 +48,45 @@ import CategoryModalComponent from '../../../category/component/category-modal/c
     IonDatetime,
     IonProgressBar,
     NgForOf,
-    NgIf,
-  ],
+    NgIf
+  ]
 })
 export default class ExpenseModalComponent implements OnInit {
   @Input() isEditing = false;
   @Input() expense: any = { name: '', category: '', amount: null, date: '' };
 
   expenseForm!: FormGroup;
-  categories: { id: string; name: string }[] = [];
+  categories: Category[] = [];
   isLoading = false;
-  userId: string | null = null;
 
   constructor(
     private modalCtrl: ModalController,
     private formBuilder: FormBuilder,
-    private firestore: AngularFirestore,
-    private afAuth: AngularFireAuth
-  ) {
-    addIcons({ add, calendar, cash, close, pricetag, save, trash });
-  }
+    private categoryService: CategoryService,
+    private expenseService: ExpenseService
+  ) {}
 
   ngOnInit(): void {
     this.expenseForm = this.formBuilder.group({
       name: [this.expense.name, [Validators.required]],
       category: [this.expense.category, []],
       amount: [this.expense.amount, [Validators.required, Validators.min(0.01)]],
-      date: [this.expense.date || formatISO(new Date()), [Validators.required]],
+      date: [this.expense.date, [Validators.required]]
     });
 
-    this.afAuth.authState.subscribe((user) => {
-      this.userId = user?.uid || null;
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
+      next: categories => (this.categories = categories),
+      error: err => console.error('Error loading categories:', err)
     });
   }
 
-  async save(): Promise<void> {
-    if (this.expenseForm.invalid || !this.userId) return;
-
-    this.isLoading = true;
-    const expenseData = {
-      ...this.expenseForm.value,
-      userId: this.userId,
-      date: formatISO(parseISO(this.expenseForm.value.date), { representation: 'date' }),
-    };
-
-    try {
-      if (this.isEditing && this.expense.id) {
-        await this.firestore.collection('expenses').doc(this.expense.id).update(expenseData);
-      } else {
-        await this.firestore.collection('expenses').add(expenseData);
-      }
-
-      this.modalCtrl.dismiss(expenseData, 'save');
-    } catch (error) {
-      console.error('Error saving expense:', error);
-    } finally {
-      this.isLoading = false;
+  save(): void {
+    if (this.expenseForm.valid) {
+      this.modalCtrl.dismiss(this.expenseForm.value, 'save');
     }
   }
 
@@ -111,35 +94,13 @@ export default class ExpenseModalComponent implements OnInit {
     this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  async delete(): Promise<void> {
-    if (!this.isEditing || !this.expense.id) return;
-
-    this.isLoading = true;
-    try {
-      await this.firestore.collection('expenses').doc(this.expense.id).delete();
-      this.modalCtrl.dismiss(null, 'delete');
-    } catch (error) {
-      console.error('Error deleting expense:', error);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
   async openNewCategoryModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
-      component: CategoryModalComponent
+      component: CategoryModalComponent // Das Kategorie-Modal
     });
-
-    await modal.present();
-
-    const { data, role } = await modal.onWillDismiss();
-
-    if (role === 'save' && data) {
-      this.categories.push(data);
-      this.categoryControl.setValue(data.id);
-    }
   }
 
+  // Getter für FormControls
   get nameControl(): FormControl {
     return this.expenseForm.get('name') as FormControl;
   }

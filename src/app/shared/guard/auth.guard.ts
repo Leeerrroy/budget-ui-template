@@ -10,7 +10,7 @@ export const authGuard: CanActivateFn = (_, state) => {
 
   return authService.currentUser().pipe(
     map(user => {
-      if (!user) router.navigate([`/${loginPath}`], state.url !== '/' ? {queryParams: {returnUrl: state.url}} : {});
+      if (!user) router.navigate([`/${loginPath}`], state.url !== '/' ? { queryParams: { returnUrl: state.url } } : {});
       return !!user;
     })
   );

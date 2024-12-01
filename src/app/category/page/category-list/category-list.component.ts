@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   ModalController,
   ToastController,
@@ -19,11 +19,11 @@ import {
 import {AngularFirestore} from '@angular/fire/compat/firestore';
 import {AngularFireAuth} from '@angular/fire/compat/auth';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
-import { CurrencyPipe, CommonModule, NgForOf} from '@angular/common';
+import { CurrencyPipe, CommonModule, NgForOf } from '@angular/common';
 import { CategoryService } from '../../service/category.service';
-import { Category, CategoryUpsertDto} from '../../../shared/domain';
-import { addIcons } from "ionicons";
-import { add, close } from "ionicons/icons";
+import { Category, CategoryUpsertDto } from '../../../shared/domain';
+import { addIcons } from 'ionicons';
+import { add, close } from 'ionicons/icons';
 
 @Component({
   selector: 'app-category-list',

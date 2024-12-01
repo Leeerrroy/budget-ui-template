@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { addMonths, set } from 'date-fns';
 import {
   IonButtons,
@@ -28,20 +28,16 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  IonSearchbar
+  IonSearchbar,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ExpenseService } from '../../service/expense.service';
+import { Expense, ExpenseCriteria, ExpenseUpsertDto } from '../../../shared/domain';
 import { addIcons } from 'ionicons';
-import { add, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical } from 'ionicons/icons';
+import {add, alertCircleOutline, arrowBack, arrowForward, close, pricetag, search, swapVertical, save} from 'ionicons/icons';
 import { CurrencyPipe, DatePipe, NgForOf, NgIf } from '@angular/common';
 import ExpenseModalComponent from '../../component/expense-modal/expense-modal.component';
-
-interface Expense {
-  name: string;
-  kategorie: string;
-  amount: number;
-  date: string;
-}
 
 @Component({
   selector: 'app-expense-list',
@@ -82,102 +78,148 @@ interface Expense {
     IonSearchbar
   ]
 })
-export default class ExpenseListComponent {
-  expenses: Expense[] = [
-    { name: 'Einkauf', kategorie: 'Lebensmittel', amount: 45.95, date: '2024-11-15' },
-    { name: 'Tankstelle', kategorie: 'Transport', amount: 60.0, date: '2024-11-16' },
-    { name: 'Kino', kategorie: 'Freizeit', amount: 15.5, date: '2024-11-18' },
-    { name: 'Kart fahren', kategorie: 'Freizeit', amount: 72.5, date: '2024-12-18' }
-  ];
+export default class ExpenseListComponent implements OnInit {
+  expenses: Expense[] = [];
   filteredExpenses: Expense[] = [];
+  filterText = '';
+  filterCategory = '';
+  currentDate = new Date(); // Für Monatsnavigation
 
-  private readonly modalCtrl = inject(ModalController);
+  isLoading = false;
 
-  date = set(new Date(), { date: 1 });
+  constructor(
+    private expenseService: ExpenseService,
+    private modalCtrl: ModalController,
+    private toastCtrl: ToastController
+  ) {
+  addIcons({ add, close, alertCircleOutline, arrowBack, arrowForward, pricetag, search, swapVertical, save });
+}
 
-  constructor() {
-    addIcons({ swapVertical, pricetag, search, alertCircleOutline, add, arrowBack, arrowForward });
+  ngOnInit(): void {
+    this.loadExpenses();
   }
 
-  // Modal für neue oder bearbeitete Expense öffnen
-  async openExpenseModal(expense?: Expense) {
+  private async showToast(message: string, color: string): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      color,
+    });
+    await toast.present();
+  }
+
+  /**
+   * Lädt die Ausgaben aus der Datenbank
+   */
+  private loadExpenses(): void {
+    const yearMonth = `${this.currentDate.getFullYear()}${String(this.currentDate.getMonth() + 1).padStart(2, '0')}`;
+    const criteria: ExpenseCriteria = {
+      page: 0,
+      size: 10,
+      sort: 'date,desc',
+      yearMonth,
+    };
+
+    this.isLoading = true;
+    this.expenseService.getExpenses(criteria).subscribe({
+      next: (response) => {
+        this.expenses = response.content; // Aus Datenbank laden
+        this.filteredExpenses = [...this.expenses]; // Gefilterte Liste initialisieren
+        this.isLoading = false;
+      },
+      error: async () => {
+        await this.showToast('Fehler beim Laden der Ausgaben.', 'danger');
+        this.isLoading = false;
+      },
+    });
+  }
+
+  /**
+   * Monatsnavigation
+   * @param step - Anzahl Monate vorwärts/rückwärts
+   */
+  addMonths(step: number): void {
+    this.currentDate = addMonths(this.currentDate, step);
+    this.loadExpenses();
+  }
+
+  /**
+   * Öffnet das Modal für neue/bearbeitete Expense
+   */
+  async openExpenseModal(expense?: Expense): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: ExpenseModalComponent,
-      componentProps: {
-        isEditing: !!expense, // True, wenn wir bearbeiten
-        expense: expense ? { ...expense } : { name: '', kategorie: '', amount: 0, date: new Date().toISOString() }
-      }
+      componentProps: { isEditing: !!expense, expense: expense || {} },
     });
+
     await modal.present();
 
     const { data, role } = await modal.onWillDismiss();
-
     if (role === 'save' && data) {
-      if (expense) {
-        // Bestehende Expense bearbeiten
-        const index = this.expenses.indexOf(expense);
-        if (index > -1) this.expenses[index] = data;
-      } else {
-        // Neue Expense hinzufügen
-        this.expenses.push(data);
-      }
-      this.filterExpenses(); // Filter aktualisieren
+      this.saveExpense(data, expense);
     } else if (role === 'delete' && expense) {
-      // Expense löschen
-      const index = this.expenses.indexOf(expense);
-      if (index > -1) this.expenses.splice(index, 1);
-      this.filterExpenses();
+      this.deleteExpense(expense.id!);
     }
   }
 
-  // Navigation für Monate
-  addMonths(number: number): void {
-    this.date = addMonths(this.date, number);
+  private saveExpense(expense: ExpenseUpsertDto, existingExpense?: Expense): void {
+    this.isLoading = true;
+    this.expenseService.upsertExpense(expense).subscribe({
+      next: async () => {
+        if (existingExpense) {
+          const index = this.expenses.findIndex((e) => e.id === existingExpense.id);
+          if (index > -1) this.expenses[index] = { ...existingExpense, ...expense };
+        } else {
+          this.expenses.push(expense as Expense);
+        }
+        this.filteredExpenses = [...this.expenses]; // Liste aktualisieren
+        await this.showToast('Expense erfolgreich gespeichert.', 'success');
+        this.isLoading = false;
+      },
+      error: async () => {
+        await this.showToast('Fehler beim Speichern der Expense.', 'danger');
+        this.isLoading = false;
+      },
+    });
+  }
+
+  private deleteExpense(id: string): void {
+    this.isLoading = true;
+    this.expenseService.deleteExpense(id).subscribe({
+      next: async () => {
+        this.expenses = this.expenses.filter((e) => e.id !== id);
+        this.filteredExpenses = [...this.expenses];
+        await this.showToast('Expense erfolgreich gelöscht.', 'success');
+        this.isLoading = false;
+      },
+      error: async () => {
+        await this.showToast('Fehler beim Löschen der Expense.', 'danger');
+        this.isLoading = false;
+      },
+    });
+  }
+
+  onFilterTextChange(searchText: string): void {
+    this.filterText = searchText ?? '';
     this.filterExpenses();
   }
 
-  filterText = '';
-  filterCategory = '';
-
-  ngOnInit() {
+  onFilterCategoryChange(category: string): void {
+    this.filterCategory = category;
     this.filterExpenses();
   }
 
-  // Filterlogik
-  filterExpenses() {
-    const selectedMonth = this.date.getMonth();
-    const selectedYear = this.date.getFullYear();
-
-    this.filteredExpenses = this.expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-
-      const matchesDate =
-        expenseDate.getMonth() === selectedMonth &&
-        expenseDate.getFullYear() === selectedYear;
-
+  private filterExpenses(): void {
+    this.filteredExpenses = this.expenses.filter((expense) => {
       const matchesText = this.filterText
         ? expense.name.toLowerCase().includes(this.filterText.toLowerCase())
         : true;
 
       const matchesCategory = this.filterCategory
-        ? expense.kategorie === this.filterCategory
+        ? expense.category?.name === this.filterCategory
         : true;
 
-      return matchesDate && matchesText && matchesCategory;
+      return matchesText && matchesCategory;
     });
   }
-
-  // Filtertext ändern
-  onFilterTextChange(text: string | null | undefined) {
-    this.filterText = text ?? '';
-    this.filterExpenses();
-  }
-
-  // Kategorie ändern
-  onFilterCategoryChange(category: string) {
-    this.filterCategory = category;
-    this.filterExpenses();
-  }
-
-  protected readonly ExpenseModalComponent = ExpenseModalComponent;
 }
